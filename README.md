@@ -31,7 +31,7 @@ require('git-drift').setup({
   -- How often to check if there's upstream
   check_upstream_interval = 60e3,
   -- How often to compare to upstream
-  count_divergence_interval = 30e3,
+  eval_drift_interval = 30e3,
   -- Timeout for background git commands
   command_timeout = 5e3,
 })
