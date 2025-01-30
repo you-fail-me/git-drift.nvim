@@ -12,6 +12,10 @@ A very basic nvim plugin exposing a function to indicate how the local git branc
 - Function to force state re-synchronization
 - Non-blocking background operations with configurable timeouts
 
+## Requirements
+
+A nerd font, to correctly render the string returned by `status()`
+
 ## Installation
 
 E.g. [lazy.nvim](https://github.com/folke/lazy.nvim):
