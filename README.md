@@ -2,6 +2,8 @@
 
 A very basic nvim plugin exposing a function to indicate how the local git branch diverges from upstream - X commits ahead, Y commits behind. The intended usage is as a lualine component but can be programmatically plugged into pretty much anything.
 
+![lualine usage example](./doc/lualine-drift.png)
+
 ## Features
 
 - Shows commits ahead/behind upstream branch
