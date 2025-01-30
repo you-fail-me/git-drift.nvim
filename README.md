@@ -50,7 +50,7 @@ require('git-drift').setup({
 
 ### Lualine Integration
 
-Can be plugged in as a lualine component:
+Can be plugged in as a [lualine](https://github.com/nvim-lualine/lualine.nvim) component:
 
 ```lua
     lualine_b = {
