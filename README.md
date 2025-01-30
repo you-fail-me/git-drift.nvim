@@ -65,7 +65,7 @@ Can be plugged in as a lualine component:
 ## API
 
 - `setup(opts)`: Configure
-- `status()`: Get current drift status
+- `status()`: Get current drift status, as a formatted string, ready for rendering
 - `reset_timers()`: Reset internal timers (to force re-sync, e.g. can be configured to fire when closing lazygit to ensure up to date indication after git operations)
 - `get_state()`: Get a copy of internal state
 
