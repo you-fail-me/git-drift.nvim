@@ -66,11 +66,32 @@ Can be plugged in as a [lualine](https://github.com/nvim-lualine/lualine.nvim) c
     },
 ```
 
+### Force refresh
+
+Sometimes it makes sense to re-sync the plugin state without waiting for the next throttle timer, e.g. right after git push, pull, commit etc. This can be done with `reset_timers()` function. I personally use [lazygit](https://github.com/folke/snacks.nvim/blob/main/docs/lazygit.md) so tie it into lazygit close event:
+
+```lua
+vim.api.nvim_create_autocmd({ "TermClose" }, {
+  callback = function(evt)
+    local buf_name = vim.api.nvim_buf_get_name(evt.buf)
+    if buf_name:match("lazygit") then
+      -- Refresh neotree
+      local events = require("neo-tree.events")
+      events.fire_event(events.GIT_EVENT)
+      -- Refresh git upstream indicator
+      require("git-drift").reset_timers()
+    end
+  end,
+})
+```
+
+Can be also hooked into some other appropriate event.
+
 ## API
 
 - `setup(opts)`: Configure
 - `status()`: Get current drift status, as a formatted string, ready for rendering
-- `reset_timers()`: Reset internal timers (to force re-sync, e.g. can be configured to fire when closing lazygit to ensure up to date indication after git operations)
+- `reset_timers()`: Reset internal timers (force re-sync)
 - `get_state()`: Get a copy of internal state
 
 ## License
