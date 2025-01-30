@@ -14,7 +14,7 @@ A very basic nvim plugin exposing a function to indicate how the local git branc
 
 ## Requirements
 
-A nerd font, to correctly render the string returned by `status()`
+Git, naturally, and a nerd font, to correctly render the string returned by `status()`
 
 ## Installation
 
@@ -68,7 +68,7 @@ Can be plugged in as a [lualine](https://github.com/nvim-lualine/lualine.nvim) c
 
 ### Force refresh
 
-Sometimes it makes sense to re-sync the plugin state without waiting for the next throttle timer, e.g. right after git push, pull, commit etc. This can be done with `reset_timers()` function. I personally use [lazygit](https://github.com/folke/snacks.nvim/blob/main/docs/lazygit.md) so tie it into lazygit close event:
+Sometimes it makes sense to re-sync the plugin state without waiting for the next throttle timer, e.g. right after git push, pull, commit etc. This can be done with `reset_timers()` function, which will force the indicator state to update on next tick. I personally use [lazygit](https://github.com/folke/snacks.nvim/blob/main/docs/lazygit.md) so tie it into lazygit close event:
 
 ```lua
 vim.api.nvim_create_autocmd({ "TermClose" }, {
@@ -92,7 +92,7 @@ Can be also hooked into some other appropriate event.
 - `setup(opts)`: Configure
 - `status()`: Get current drift status, as a formatted string, ready for rendering
 - `reset_timers()`: Reset internal timers (force re-sync)
-- `get_state()`: Get a copy of internal state
+- `get_state()`: Get a copy of internal state (e.g. for custom rendering)
 
 ## License
 
