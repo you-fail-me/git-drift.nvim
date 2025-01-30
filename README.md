@@ -18,7 +18,10 @@ E.g. [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
 {
-  "you-fail-me/git-drift.nvim",
+    "you-fail-me/git-drift.nvim",
+    config = function()
+        require("git-drift").setup()
+    end,
 }
 ```
 
