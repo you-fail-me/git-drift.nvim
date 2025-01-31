@@ -11,6 +11,9 @@ A very basic nvim plugin exposing a function to indicate how the local git branc
 - Configurable throttle intervals
 - Function to force state re-synchronization
 - Non-blocking background operations with configurable timeouts
+- No implicit operations overhead, only does anything if `status()` is called
+- Uses resources sparingly and doesn't even try to check upstream divergence if finds no upstream
+- Very simple, no dependencies
 
 ## Requirements
 
@@ -92,7 +95,7 @@ Can be also hooked into some other appropriate event.
 - `setup(opts)`: Configure
 - `status()`: Get current drift status, as a formatted string, ready for rendering
 - `reset_timers()`: Reset internal timers (force re-sync)
-- `get_state()`: Get a copy of internal state (e.g. for custom rendering)
+- `get_state()`: Get a copy of internal state (e.g. for debugging)
 
 ## License
 
