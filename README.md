@@ -1,23 +1,23 @@
 # git-drift.nvim
 
-A very basic nvim plugin exposing a function to indicate how the local git branch diverges from upstream - X commits ahead, Y commits behind. The intended usage is as a lualine component but can be programmatically plugged into pretty much anything.
+A very simple functionality to tell how the local git branch diverges from upstream - X commits ahead, Y commits behind. The intended usage is as a lualine component but can be programmatically plugged into pretty much anything.
 
 ![lualine usage example](./doc/lualine-drift.png)
 
 ## Features
 
-- Shows commits ahead/behind upstream branch
-- Throttles git commands to prevent issues if the function is called often (e.g. during render in a UI component)
-- Configurable throttle intervals
-- Function to force state re-synchronization
-- Non-blocking background operations with configurable timeouts
-- No implicit operations overhead, only does anything if `status()` is called
-- Uses resources sparingly and doesn't even try to check upstream divergence if finds no upstream
-- Very simple, no dependencies
+- Shows commits ahead/behind upstream branch.
+- Throttles git commands to prevent issues if the function is called often (e.g. during render in a UI component).
+- Configurable throttle intervals.
+- Function to force state re-synchronization.
+- Non-blocking background operations with configurable timeouts.
+- No implicit operations overhead, only does anything if `status()` is called.
+- Uses resources sparingly and doesn't even try to check upstream divergence if finds no upstream.
+- Very simple, no dependencies.
 
 ## Requirements
 
-Git, naturally, and a nerd font, to correctly render the string returned by `status()`
+Git, naturally, and a nerd font, to correctly render the string returned by `status()`.
 
 ## Installation
 
@@ -92,10 +92,10 @@ Can be also hooked into some other appropriate event.
 
 ## API
 
-- `setup(opts)`: Configure
-- `status()`: Get current drift status, as a formatted string, ready for rendering
-- `reset_timers()`: Reset internal timers (force re-sync)
-- `get_state()`: Get a copy of internal state (e.g. for debugging)
+- `setup(opts)`: Configure.
+- `status()`: Get current drift status, as a formatted string, ready for rendering.
+- `reset_timers()`: Reset internal timers (force re-sync).
+- `get_state()`: Get a copy of internal state (e.g. for debugging).
 
 ## License
 
