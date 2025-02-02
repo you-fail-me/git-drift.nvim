@@ -178,6 +178,11 @@ end
 -- Reset state so the indicator is re-rendered
 function M.reset_timers()
   vim.schedule_wrap(function()
+    -- Reset the working flag if working for way too long
+    if state.working and vim.uv.now() - state.last_fetch > 10 * config.options.eval_drift_interval then
+      state.working = false
+    end
+
     state.last_fetch = 0
     state.last_upstream_check = 0
     state.last_drift_eval = 0
