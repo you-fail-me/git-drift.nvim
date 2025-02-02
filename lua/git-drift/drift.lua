@@ -83,8 +83,9 @@ local function git_fetch(callback)
     return
   end
 
-  -- Return without calling the next step if no upstream
+  -- Skip to the next step if no upstream
   if state.upstream.found == false then
+    callback()
     return
   end
 
@@ -109,6 +110,12 @@ local function eval_drift(callback)
   then
     callback()
 
+    return
+  end
+
+  -- Return if no upstream
+  if state.upstream.found == false then
+    callback()
     return
   end
 
