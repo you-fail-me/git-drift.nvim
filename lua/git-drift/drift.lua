@@ -79,7 +79,6 @@ local function git_fetch(callback)
   -- Call the next step right away if throttled
   if util.now() - state.last_fetch < config.options.fetch_interval then
     callback()
-
     return
   end
 
@@ -178,15 +177,7 @@ end
 
 -- Get commits ahead and behind from cache
 function M.status()
-  local timer = vim.uv.new_timer()
-  timer:start(
-    0,
-    0,
-    vim.schedule_wrap(function()
-      M.run()
-      timer:close()
-    end)
-  )
+  vim.schedule(M.run)
 
   return render()
 end
