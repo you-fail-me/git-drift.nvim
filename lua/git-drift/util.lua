@@ -4,6 +4,7 @@ local M = {}
 function M.with_timeout(cmd, opts, timeout)
   local job_id
   local timer = vim.uv.new_timer()
+  local start_time = vim.uv.now() -- Current time in ms
 
   local original_callbacks = {
     on_exit = opts.on_exit,
@@ -16,8 +17,15 @@ function M.with_timeout(cmd, opts, timeout)
       timer:close()
       timer = nil
     end
-    if job_id and vim.fn.jobwait({ job_id }, 0)[1] == -1 then
+    -- Attempt graceful termination first
+    if job_id then
       vim.fn.jobstop(job_id)
+      -- Give it a small grace period then force kill if still running
+      vim.defer_fn(function()
+        if vim.fn.jobwait({ job_id }, 0)[1] == -1 then
+          vim.fn.system('kill -9 ' .. vim.fn.jobpid(job_id))
+        end
+      end, 100)
     end
   end
 
@@ -30,14 +38,30 @@ function M.with_timeout(cmd, opts, timeout)
 
   if opts.on_stdout then
     opts.on_stdout = function(...)
+      -- Only extend timeout if we haven't exceeded maximum allowed time
       if timer then
-        timer:again()
+        local current_time = vim.uv.now()
+        if (current_time - start_time) < (timeout * 2) then
+          timer:again()
+        end
       end
       original_callbacks.on_stdout(...)
     end
   end
 
-  -- Start the timer
+  -- Start the job first
+  job_id = vim.fn.jobstart(cmd, opts)
+
+  -- Then immediately start the timer
+  if job_id <= 0 then
+    -- Job failed to start
+    vim.notify(
+      string.format("Failed to start job: %s", table.concat(cmd, " ")),
+      vim.log.levels.ERROR
+    )
+    return job_id
+  end
+
   timer:start(timeout, 0, vim.schedule_wrap(function()
     vim.notify(
       string.format("Job timed out after %d ms: %s",
@@ -52,8 +76,7 @@ function M.with_timeout(cmd, opts, timeout)
     end
   end))
 
-  -- Start the job
-  job_id = vim.fn.jobstart(cmd, opts)
+
   return job_id
 end
 
