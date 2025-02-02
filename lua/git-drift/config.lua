@@ -9,6 +9,8 @@ M.defaults = {
   eval_drift_interval = 30e3,
   -- Timeout for git commands
   command_timeout = 5e3,
+  -- Timeout, after which to hard reset the jobs (edge cases, like waking up after OS sleep)
+  hard_reset_timeout = 180e3,
 }
 
 M.options = {}

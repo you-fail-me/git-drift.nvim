@@ -142,7 +142,7 @@ end
 function M.run()
   if state.working then
     -- Kill any hanging jobs and restart if looks stuck for a while
-    if state.last_upstream_check > 0 and util.now() - state.last_upstream_check > 5 * config.options.check_upstream_interval then
+    if state.last_upstream_check > 0 and util.now() - state.last_upstream_check > config.options.hard_reset_timeout then
       for job_name, job in pairs(state.running_jobs) do
         if job.cleanup then
           job.cleanup()

@@ -69,7 +69,7 @@ Can be plugged in as a [lualine](https://github.com/nvim-lualine/lualine.nvim) c
     },
 ```
 
-### Force refresh
+### Force Refresh
 
 Sometimes it makes sense to re-sync the plugin state without waiting for the next throttle timer, e.g. right after git push, pull, commit etc. This can be done with `reset_timers()` function, which will force the indicator state to update on next tick. I personally use [lazygit](https://github.com/folke/snacks.nvim/blob/main/docs/lazygit.md) so tie it into lazygit close event:
 
