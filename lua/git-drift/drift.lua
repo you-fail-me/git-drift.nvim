@@ -23,6 +23,13 @@ local state = {
     -- Number of commits, by which the local branch is behind the upstream
     behind = 0,
   },
+
+  -- Keep track of background jobs
+  running_jobs = {
+    upstream = nil,
+    fetch = nil,
+    drift = nil,
+  },
 }
 
 -- Render state into a string indicator
@@ -38,7 +45,7 @@ local function render()
   end
 
   -- Upstream found, divergence info available in state
-  if state.upstream.last_update_time > 0 then
+  if state.last_upstream_check > 0 then
     return string.format("%d%s %d%s", state.upstream.ahead, icons.AHEAD, state.upstream.behind, icons.BEHIND)
   end
 
@@ -49,16 +56,16 @@ end
 -- Check if the current branch has an upstream
 local function check_upstream(callback)
   -- Call the next step right away if throttled
-  if state.last_upstream_check > 0 and vim.uv.now() - state.last_upstream_check < config.options.check_upstream_interval then
+  if util.now() - state.last_upstream_check < config.options.check_upstream_interval then
     callback()
     return
   end
 
   -- Check if the branch has an upstream
-  util.with_timeout({ "git", "rev-parse", "@{upstream}" }, {
+  state.running_jobs.upstream = util.with_timeout({ "git", "rev-parse", "@{upstream}" }, {
     on_exit = vim.schedule_wrap(function(_, code)
       -- Update state
-      state.upstream.last_update_time = vim.uv.now()
+      state.last_upstream_check = util.now()
       state.upstream.found = (code == 0)
 
       -- Call next step
@@ -70,8 +77,9 @@ end
 -- Start background git fetch
 local function git_fetch(callback)
   -- Call the next step right away if throttled
-  if state.last_fetch > 0 and vim.uv.now() - state.last_fetch < config.options.fetch_interval then
+  if util.now() - state.last_fetch < config.options.fetch_interval then
     callback()
+
     return
   end
 
@@ -81,10 +89,10 @@ local function git_fetch(callback)
   end
 
   -- Do async git fetch
-  util.with_timeout({ "git", "fetch" }, {
+  state.running_jobs.fetch = util.with_timeout({ "git", "fetch" }, {
     on_exit = vim.schedule_wrap(function(_, code)
       -- Update state
-      state.last_fetch = vim.uv.now()
+      state.last_fetch = util.now()
 
       -- Call next step
       callback(code == 0)
@@ -97,14 +105,15 @@ local function eval_drift(callback)
   -- Return right away if throttled
   if
       state.last_drift_eval > 0
-      and vim.uv.now() - state.last_drift_eval < config.options.eval_drift_interval
+      and util.now() - state.last_drift_eval < config.options.eval_drift_interval
   then
     callback()
+
     return
   end
 
   -- Run an async job to get count of commits ahead and behind upstream
-  util.with_timeout({ "git", "rev-list", "--count", "--left-right", "@{upstream}...HEAD" }, {
+  state.running_jobs.drift = util.with_timeout({ "git", "rev-list", "--count", "--left-right", "@{upstream}...HEAD" }, {
     on_stdout = vim.schedule_wrap(function(_, data)
       if not data or #data == 0 then
         return
@@ -118,7 +127,7 @@ local function eval_drift(callback)
       if behind and ahead then
         state.upstream.behind = tonumber(behind) or 0
         state.upstream.ahead = tonumber(ahead) or 0
-        state.last_drift_eval = vim.uv.now()
+        state.last_drift_eval = util.now()
       end
     end),
 
@@ -132,14 +141,28 @@ end
 -- Run the workflow: check upstream, fetch, count divergence from upstream
 function M.run()
   if state.working then
-    return
+    -- Kill any hanging jobs and restart if looks stuck for a while
+    if state.last_upstream_check > 0 and util.now() - state.last_upstream_check > 5 * config.options.check_upstream_interval then
+      for job_name, job in pairs(state.running_jobs) do
+        if job.cleanup then
+          job.cleanup()
+          state.running_jobs[job_name] = nil
+        end
+      end
+    else
+      return
+    end
   end
 
   state.working = true
 
+
   check_upstream(function()
+    state.running_jobs.upstream = nil
     git_fetch(function()
+      state.running_jobs.fetch = nil
       eval_drift(function()
+        state.running_jobs.drift = nil
         state.working = false
       end)
     end)
@@ -148,6 +171,7 @@ end
 
 -- Get commits ahead and behind from cache
 function M.status()
+  -- vim.defer_fn(M.run, 50)
   local timer = vim.uv.new_timer()
   timer:start(
     0,
@@ -173,17 +197,17 @@ function M.get_state()
       ahead = state.upstream.ahead,
       behind = state.upstream.behind,
     },
+    running_jobs = {
+      upstream = state.running_jobs.upstream and state.running_jobs.upstream.job_id,
+      fetch = state.running_jobs.fetch and state.running_jobs.fetch.job_id,
+      drift = state.running_jobs.drift and state.running_jobs.drift.job_id,
+    },
   }
 end
 
 -- Reset state so the indicator is re-rendered
 function M.reset_timers()
   vim.schedule_wrap(function()
-    -- Reset the working flag if working for way too long
-    if state.working and vim.uv.now() - state.last_fetch > 10 * config.options.eval_drift_interval then
-      state.working = false
-    end
-
     state.last_fetch = 0
     state.last_upstream_check = 0
     state.last_drift_eval = 0

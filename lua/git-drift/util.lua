@@ -1,10 +1,14 @@
 local M = {}
 
+function M.now()
+  return vim.uv.now()
+end
+
 -- Wrapper around vim jobs to implement timeouts
 function M.with_timeout(cmd, opts, timeout)
   local job_id
   local timer = vim.uv.new_timer()
-  local start_time = vim.uv.now() -- Current time in ms
+  local start_time = M.now()
 
   local original_callbacks = {
     on_exit = opts.on_exit,
@@ -40,7 +44,7 @@ function M.with_timeout(cmd, opts, timeout)
     opts.on_stdout = function(...)
       -- Only extend timeout if we haven't exceeded maximum allowed time
       if timer then
-        local current_time = vim.uv.now()
+        local current_time = M.now()
         if (current_time - start_time) < (timeout * 2) then
           timer:again()
         end
@@ -52,6 +56,11 @@ function M.with_timeout(cmd, opts, timeout)
   -- Start the job first
   job_id = vim.fn.jobstart(cmd, opts)
 
+  local handle = {
+    job_id = job_id,
+    cleanup = cleanup,
+  }
+
   -- Then immediately start the timer
   if job_id <= 0 then
     -- Job failed to start
@@ -59,7 +68,7 @@ function M.with_timeout(cmd, opts, timeout)
       string.format("Failed to start job: %s", table.concat(cmd, " ")),
       vim.log.levels.ERROR
     )
-    return job_id
+    return handle
   end
 
   timer:start(timeout, 0, vim.schedule_wrap(function()
@@ -77,7 +86,7 @@ function M.with_timeout(cmd, opts, timeout)
   end))
 
 
-  return job_id
+  return handle
 end
 
 return M
