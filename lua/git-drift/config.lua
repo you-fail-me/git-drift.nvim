@@ -9,6 +9,8 @@ M.defaults = {
   eval_drift_interval = 30e3,
   -- Timeout for git commands
   command_timeout = 5e3,
+  -- Timeout for hard reset of any hanging jobs
+  hard_reset_timeout = 180e3,
 }
 
 M.options = {}
@@ -19,7 +21,7 @@ function M.setup(opts)
   -- Use explicit hard_reset_timeout if provided, otherwise calculate from eval_drift_interval
   -- Useful for edge cases like leaving process running when OS goes to sleep - can get weird inconsistent states
   if not opts.hard_reset_timeout then
-    M.options.hard_reset_timeout = M.options.eval_drift_interval * 3
+    M.options.hard_reset_timeout = M.options.eval_drift_interval * 6
   end
 end
 
