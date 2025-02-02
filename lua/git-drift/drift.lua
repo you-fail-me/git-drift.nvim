@@ -162,7 +162,6 @@ function M.run()
 
   state.working = true
 
-
   check_upstream(function()
     state.running_jobs.upstream = nil
     git_fetch(function()
