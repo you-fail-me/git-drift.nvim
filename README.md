@@ -12,6 +12,7 @@ A very simple functionality to tell how the local git branch diverges from upstr
 - Function to force state re-synchronization.
 - Non-blocking background operations with configurable timeouts.
 - No implicit operations overhead, only does anything if `status()` is called.
+- Periodically does `git fetch` to stay aware of upstream commits.
 - Uses resources sparingly and doesn't even try to check upstream divergence if finds no upstream.
 - Very simple, no dependencies.
 
