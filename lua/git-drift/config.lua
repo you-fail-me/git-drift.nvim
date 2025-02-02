@@ -9,14 +9,18 @@ M.defaults = {
   eval_drift_interval = 30e3,
   -- Timeout for git commands
   command_timeout = 5e3,
-  -- Timeout, after which to hard reset the jobs (edge cases, like waking up after OS sleep)
-  hard_reset_timeout = 180e3,
 }
 
 M.options = {}
 
 function M.setup(opts)
-  M.options = vim.tbl_deep_extend("force", {}, M.defaults, opts or {})
+  opts = opts or {}
+  M.options = vim.tbl_deep_extend("force", {}, M.defaults, opts)
+  -- Use explicit hard_reset_timeout if provided, otherwise calculate from eval_drift_interval
+  -- Useful for edge cases like leaving process running when OS goes to sleep - can get weird inconsistent states
+  if not opts.hard_reset_timeout then
+    M.options.hard_reset_timeout = M.options.eval_drift_interval * 3
+  end
 end
 
 return M
