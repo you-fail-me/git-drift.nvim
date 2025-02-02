@@ -171,7 +171,6 @@ end
 
 -- Get commits ahead and behind from cache
 function M.status()
-  -- vim.defer_fn(M.run, 50)
   local timer = vim.uv.new_timer()
   timer:start(
     0,
