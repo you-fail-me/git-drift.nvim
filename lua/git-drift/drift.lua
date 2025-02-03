@@ -203,11 +203,11 @@ end
 
 -- Reset state so the indicator is re-rendered
 function M.reset_timers()
-  vim.schedule_wrap(function()
+  vim.schedule(function()
     state.last_fetch = 0
     state.last_upstream_check = 0
     state.last_drift_eval = 0
-  end)()
+  end)
 end
 
 return M
