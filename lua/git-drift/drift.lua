@@ -108,7 +108,6 @@ local function eval_drift(callback)
       and util.now() - state.last_drift_eval < config.options.eval_drift_interval
   then
     callback()
-
     return
   end
 
