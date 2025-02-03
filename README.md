@@ -47,8 +47,6 @@ require('git-drift').setup({
   eval_drift_interval = 30e3,
   -- Timeout for background git commands
   command_timeout = 5e3,
-  -- Timeout for hard reset of any hanging jobs
-  hard_reset_timeout = 180e3,
 })
 ```
 
@@ -92,7 +90,6 @@ vim.api.nvim_create_autocmd({ "TermClose" }, {
 ```
 
 Can be also hooked into some other appropriate event.
-The `hard_reset_timeout` config option defaults to 6 times the `eval_drift_interval` and is used for internal health check and recovery - if the divergence couldn't be checked for so long, the plugin will kill any pending background jobs and re-sync. Intended for edge cases and inconsistent states, e.g. laptop OS going to sleep amidst a job.
 
 ## API
 
