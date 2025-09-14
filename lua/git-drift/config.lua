@@ -1,5 +1,21 @@
+---@class PluginConfig
+---@field fetch_interval number How often to do git fetch (milliseconds)
+---@field check_upstream_interval number How often to check if there's upstream (milliseconds)
+---@field eval_drift_interval number How often to get commits ahead and behind upstream (milliseconds)
+---@field command_timeout number Timeout for git commands (milliseconds)
+---@field hard_reset_timeout number Timeout for hard reset of any hanging jobs (milliseconds)
+---@field icons PluginIcons Icon configuration
+
+---@class PluginIcons
+---@field ahead string Icon for commits ahead of upstream
+---@field behind string Icon for commits behind upstream
+---@field no_upstream string Icon when no upstream is configured
+---@field searching string Icon while searching/initializing
+---@field fallback string Fallback icon for error states
+
 local M = {}
 
+---@type PluginConfig
 M.defaults = {
   -- How often to do git fetch
   fetch_interval = 5 * 60e3,
@@ -21,8 +37,11 @@ M.defaults = {
   },
 }
 
+---@type PluginConfig
 M.options = {}
 
+---Configure git-drift with user options
+---@param opts PluginConfig? User configuration options (optional)
 function M.setup(opts)
   opts = opts or {}
   M.options = vim.tbl_deep_extend("force", {}, M.defaults, opts)

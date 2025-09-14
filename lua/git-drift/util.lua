@@ -1,10 +1,24 @@
+---@class JobHandle
+---@field job_id number The job ID returned by vim.fn.jobstart
+---@field cleanup fun() Function to cleanup the job and timer
+
+---@class JobOpts
+---@field on_exit? fun(chan_id: number, code: number, ...) Callback when job exits
+---@field on_stdout? fun(chan_id: number, data: string[], ...) Callback for stdout data
+
 local M = {}
 
+---Get current time in milliseconds
+---@return number
 function M.now()
   return vim.uv.now()
 end
 
--- Wrapper around vim jobs to implement timeouts
+---Wrapper around vim jobs to implement timeouts
+---@param cmd string[] Command and arguments to execute
+---@param opts JobOpts Job options with callbacks
+---@param timeout number Timeout in milliseconds
+---@return JobHandle
 function M.with_timeout(cmd, opts, timeout)
   local job_id
   local timer = vim.uv.new_timer()

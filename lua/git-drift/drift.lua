@@ -1,8 +1,35 @@
 local config = require("git-drift.config")
 local util = require("git-drift.util")
 
+---@class UpstreamInfo
+---@field found boolean? Whether the current branch has an upstream detected
+---@field ahead number Number of commits ahead of upstream
+---@field behind number Number of commits behind upstream
+
+---@class RunningJobs
+---@field upstream JobHandle? Job checking upstream status
+---@field fetch JobHandle? Job doing git fetch
+---@field drift JobHandle? Job evaluating drift
+
+---@class PluginState
+---@field working boolean Whether the workflow is currently running
+---@field last_fetch number Last time git fetch was done (milliseconds)
+---@field last_upstream_check number Last time upstream check was done (milliseconds)
+---@field last_drift_eval number Last time drift evaluation was done (milliseconds)
+---@field upstream UpstreamInfo Upstream branch information
+---@field running_jobs RunningJobs Background job handles
+
+---@class StateSnapshot
+---@field working boolean
+---@field last_fetch number
+---@field last_upstream_check number
+---@field last_drift_eval number
+---@field upstream UpstreamInfo
+---@field running_jobs table<string, number?> Job IDs for running jobs
+
 local M = {}
 
+---@type PluginState
 local state = {
   -- Whether the workflow is currently running (to prevent concurrent runs)
   working = false,
@@ -31,7 +58,8 @@ local state = {
   },
 }
 
--- Render state into a string indicator
+---Render state into a string indicator
+---@return string
 local function render()
   -- Still initializing, no info on upstream
   if state.upstream.found == nil then
@@ -53,7 +81,8 @@ local function render()
   return config.options.icons.fallback
 end
 
--- Check if the current branch has an upstream
+---Check if the current branch has an upstream
+---@param callback fun(has_upstream?: boolean)
 local function check_upstream(callback)
   -- Call the next step right away if throttled
   if util.now() - state.last_upstream_check < config.options.check_upstream_interval then
@@ -74,7 +103,8 @@ local function check_upstream(callback)
   }, config.options.command_timeout)
 end
 
--- Start background git fetch
+---Start background git fetch
+---@param callback fun(success?: boolean)
 local function git_fetch(callback)
   -- Call the next step right away if throttled
   if util.now() - state.last_fetch < config.options.fetch_interval then
@@ -100,7 +130,8 @@ local function git_fetch(callback)
   }, config.options.command_timeout)
 end
 
--- Update the upstream state from git
+---Update the upstream state from git
+---@param callback fun(success?: boolean)
 local function eval_drift(callback)
   -- Return right away if throttled
   if
@@ -143,7 +174,7 @@ local function eval_drift(callback)
   }, config.options.command_timeout)
 end
 
--- Run the workflow: check upstream, fetch, count divergence from upstream
+---Run the workflow: check upstream, fetch, count divergence from upstream
 function M.run()
   if state.working then
     -- Kill any hanging jobs and restart if looks stuck for a while
@@ -173,14 +204,16 @@ function M.run()
   end)
 end
 
--- Get commits ahead and behind from cache
+---Get commits ahead and behind from cache
+---@return string
 function M.status()
   vim.schedule(M.run)
 
   return render()
 end
 
--- View current state
+---View current state
+---@return StateSnapshot
 function M.get_state()
   return {
     working = state.working,
@@ -200,7 +233,7 @@ function M.get_state()
   }
 end
 
--- Reset state so the indicator is re-rendered
+---Reset state so the indicator is re-rendered
 function M.reset_timers()
   vim.schedule(function()
     state.last_fetch = 0
