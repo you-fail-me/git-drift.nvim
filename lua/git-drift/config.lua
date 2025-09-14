@@ -11,6 +11,14 @@ M.defaults = {
   command_timeout = 5e3,
   -- Timeout for hard reset of any hanging jobs
   hard_reset_timeout = 180e3,
+  -- Icons
+  icons = {
+    ahead = "󱦲",
+    behind = "󱦳",
+    no_upstream = "",
+    searching = "",
+    fallback = "",
+  },
 }
 
 M.options = {}

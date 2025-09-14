@@ -1,6 +1,5 @@
 local config = require("git-drift.config")
 local util = require("git-drift.util")
-local icons = require("git-drift.icons")
 
 local M = {}
 
@@ -36,21 +35,22 @@ local state = {
 local function render()
   -- Still initializing, no info on upstream
   if state.upstream.found == nil then
-    return icons.SEARCHING
+    return config.options.icons.searching
   end
 
   -- No upstream found
   if state.upstream.found == false then
-    return icons.NO_UPSTREAM
+    return config.options.icons.no_upstream
   end
 
   -- Upstream found, divergence info available in state
   if state.last_upstream_check > 0 then
-    return string.format("%d%s %d%s", state.upstream.ahead, icons.AHEAD, state.upstream.behind, icons.BEHIND)
+    return string.format("%d%s %d%s", state.upstream.ahead, config.options.icons.ahead, state.upstream.behind,
+      config.options.icons.behind)
   end
 
   -- Fallback
-  return icons.FALLBACK
+  return config.options.icons.fallback
 end
 
 -- Check if the current branch has an upstream

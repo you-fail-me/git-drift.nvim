@@ -79,10 +79,6 @@ vim.api.nvim_create_autocmd({ "TermClose" }, {
   callback = function(evt)
     local buf_name = vim.api.nvim_buf_get_name(evt.buf)
     if buf_name:match("lazygit") then
-      -- Refresh neotree
-      local events = require("neo-tree.events")
-      events.fire_event(events.GIT_EVENT)
-      -- Refresh git upstream indicator
       require("git-drift").reset_timers()
     end
   end,
